@@ -39,16 +39,22 @@ body {
 
 .header-title {
   display: flex;
-  align-items: space-between;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
   width: 100%;
 }
 
-.header-logo {
-  height: 100px;
-  width: 100px;
-  object-fit: contain;
+.header-company {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+  background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #333333 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: flex;
+  align-items: center;
 }
 
 .header-text {
@@ -75,12 +81,13 @@ body {
 
 .upload {
   display: inline-block;
-  padding: 0.75rem 1.5rem;
+  padding: 0.5rem 1rem;
   background: #b10a2e;
   color: white;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 500;
+  font-size: 0.85rem;
   transition: background 0.2s;
   white-space: nowrap;
   margin-right: 10px;
@@ -116,43 +123,8 @@ body {
   overflow: visible;
 }
 
-.filter-dropdown {
-  padding: 0.75rem 2.5rem 0.75rem 1rem;
-  font-size: 0.95rem;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  background: white;
-  color: #333;
-  cursor: pointer;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  min-width: 180px;
-  width: auto;
-  font-weight: 500;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 0.75rem center;
-  position: relative;
-  z-index: 1;
-  overflow: visible;
-}
-
-.filter-dropdown:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  z-index: 10;
-}
-
-.filter-dropdown option {
-  padding: 0.5rem;
-  white-space: nowrap;
-}
-
 .search-input {
-  flex: 1;
+  width: 100%;
   padding: 0.75rem 1rem;
   font-size: 0.95rem;
   border: 1px solid #d1d5db;
@@ -235,6 +207,10 @@ td {
   font-size: 0.95rem;
 }
 
+td.model-cell {
+  font-weight: 500;
+}
+
 .grading-badge {
   display: inline-block;
   padding: 0.35rem 0.85rem;
@@ -287,9 +263,12 @@ td {
     width: 100%;
   }
 
-  .header-logo {
-    height: 70px;
-    width: 70px;
+  .header-company {
+    font-size: 1.5rem;
+    background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #333333 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
   .header-title h1 {
@@ -306,21 +285,10 @@ td {
 
   .search-container {
     padding: 0.75rem;
-    flex-direction: row;
-    gap: 0.5rem;
-    align-items: stretch;
-  }
-
-  .filter-dropdown {
-    flex: 0 0 auto;
-    padding: 0.65rem 2rem 0.65rem 0.85rem;
-    font-size: 0.9rem;
-    min-width: 120px;
-    width: auto;
   }
 
   .search-input {
-    flex: 1;
+    width: 100%;
     padding: 0.65rem 0.85rem;
     font-size: 0.9rem;
   }
@@ -335,26 +303,27 @@ td {
   }
 
   tbody {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
+    display: block;
     padding: 0.75rem;
   }
 
   tbody tr {
     display: block;
     width: 100%;
-    margin-bottom: 0;
+    margin-bottom: 0.75rem;
     border: 1px solid #e5e7eb;
     border-radius: 8px;
     padding: 0;
-    background: #f9fafb;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
 
-  tbody tr.even-row,
+  tbody tr.even-row {
+    background: #ffffff;
+    width: 100%;
+  }
+
   tbody tr.odd-row {
-    background: #f9fafb;
+    background: #f0f9ff;
     width: 100%;
   }
 
@@ -367,6 +336,10 @@ td {
     border-bottom: 1px dashed #e5e7eb;
     text-align: right;
     font-size: 0.85rem;
+  }
+
+  td.model-cell {
+    font-weight: 500;
   }
 
   td:last-child {

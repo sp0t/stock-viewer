@@ -1,6 +1,6 @@
-# Stock Viewer (React + Vite)
+# Stock Viewer (React + Vite + Express)
 
-Minimal, mobile-friendly stock table fed by XLSX uploads. Designed to drop onto a standard cPanel/LAMP host via a static build (no server code required).
+Minimal, mobile-friendly stock table fed by XLSX uploads with backend support for file persistence.
 
 ## Quick start (local)
 
@@ -9,34 +9,75 @@ Minimal, mobile-friendly stock table fed by XLSX uploads. Designed to drop onto 
    ```bash
    npm install
    ```
-3. Run the dev server:
+3. Run the development server (frontend only):
    ```bash
    npm run dev
    ```
    Open the shown URL (default http://localhost:5173).
 
-## Build for production
+4. Or run with backend server:
+   ```bash
+   # Terminal 1: Start backend server
+   npm run server
+   
+   # Terminal 2: Start frontend dev server
+   npm run dev
+   ```
+
+## Backend Server
+
+The backend server provides file upload functionality:
+
+- **Port**: 4000 (default)
+- **Upload endpoint**: `POST /upload`
+- **Health check**: `GET /health`
+
+The server saves uploaded XLSX files to `public/sample-stock.xlsx`, which is then loaded by the frontend.
+
+### Running the backend:
 
 ```bash
-npm run build
+npm run server
+# or
+npm start
 ```
 
-Upload the generated `dist/` folder to your cPanel host (any static hosting works). If deploying under a subfolder, keep the `dist` contents together.
+## Production Build
+
+1. Build the frontend:
+   ```bash
+   npm run build
+   ```
+
+2. Start the production server:
+   ```bash
+   npm start
+   ```
+
+The server will serve the built React app from the `dist/` folder and handle file uploads.
 
 ## Using the XLSX importer
 
-- Click **Upload XLSX** and choose your Excel file.
-- The first worksheet is read; expected columns (case-insensitive): `Make`, `Model`, `Quantity`, `Grading`.
-- Data loads client-side and replaces the in-memory table. Initial view shows sample rows so the page never looks empty.
+1. Navigate to `/admin` route to access the upload button
+2. Click **Upload XLSX** and choose your Excel file
+3. The file will be uploaded to the server and saved as `public/sample-stock.xlsx`
+4. The table will automatically reload with the new data
+
+Expected columns (case-insensitive): `Make`, `Model`, `Quantity`, `Grading`, `Price Enquiry`
 
 ## File layout
 
-- `src/App.jsx` – UI + XLSX parsing with `xlsx`.
-- `src/index.css` – styling, sticky header table with mobile-friendly cards on narrow screens.
-- `vite.config.js` – Vite + React config.
+- `src/App.jsx` – UI + XLSX parsing with `xlsx`
+- `src/index.css` – styling, sticky header table with mobile-friendly cards
+- `server.js` – Express backend server with file upload endpoint
+- `vite.config.js` – Vite + React config
+- `public/sample-stock.xlsx` – Stock data file (created on upload)
 
-## Notes
+## Features
 
-- No backend or database is required. If you later need persistent storage or cron-based ingestion, you can add a small API endpoint that stores the parsed JSON to disk/DB and serve it to the React app.
-- The table is intentionally uncluttered: no filters/pagination yet, to keep it fast on phones.
+- Mobile-responsive design with 1-column layout
+- Search functionality across all fields
+- WhatsApp integration for price enquiries
+- Backend file upload and persistence
+- Automatic data reload after upload
 

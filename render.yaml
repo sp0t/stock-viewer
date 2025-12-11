@@ -1,0 +1,27 @@
+services:
+  # Backend API Service
+  - type: web
+    name: stock-viewer-api
+    env: node
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+    disk:
+      name: stock-viewer-disk
+      mountPath: /opt/render/project/src/public
+      sizeGB: 1
+
+  # Frontend Static Site
+  - type: web
+    name: stock-viewer-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_UPLOAD_API_URL
+        sync: false  # You'll set this manually after backend is deployed
+
