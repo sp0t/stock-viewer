@@ -24,7 +24,7 @@ const getStockFilePath = (branch) => {
 const UPLOAD_API_URL = import.meta.env.VITE_UPLOAD_API_URL || "http://localhost:4000/upload";
 
 // WhatsApp number - update this with your actual WhatsApp number
-const WHATSAPP_NUMBER = "380666732238"; // Replace with your WhatsApp number (country code + number, no + or spaces)
+const WHATSAPP_NUMBER = "971585678669"; // Replace with your WhatsApp number (country code + number, no + or spaces)
 
 // Sample data to display when no file is uploaded
 const SAMPLE_DATA = [
