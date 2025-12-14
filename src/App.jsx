@@ -9,7 +9,18 @@ const columns = [
   { key: "priceEnquiry", label: "PRICE" }
 ];
 
-const STOCK_FILE_PATH = "/sample-stock.xlsx";
+const BRANCHES = {
+  DUBAI: "dubai",
+  HONG_KONG: "hong-kong"
+};
+
+const getStockFilePath = (branch) => {
+  if (branch === BRANCHES.HONG_KONG) {
+    return "/hongkong.xlsx";
+  }
+  return "/dubai.xlsx";
+};
+
 const UPLOAD_API_URL = import.meta.env.VITE_UPLOAD_API_URL || "http://localhost:4000/upload";
 
 // WhatsApp number - update this with your actual WhatsApp number
@@ -29,28 +40,74 @@ const SAMPLE_DATA = [
   { make: "Apple-2", model: "iPhone 14 Pro Max", quantity: 200, grading: "DND", priceEnquiry: "Yes" }
 ];
 
+const ADMIN_CREDENTIALS = {
+  username: 'admin',
+  password: 'dubai!@#$'
+};
+
 export default function App() {
   const [rows, setRows] = useState(SAMPLE_DATA);
   const [status, setStatus] = useState("Showing sample data");
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeBranch, setActiveBranch] = useState(BRANCHES.DUBAI);
+  const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+  const [loginError, setLoginError] = useState('');
 
   useEffect(() => {
     // Check if admin path is in URL (e.g., /admin)
     const pathname = window.location.pathname;
-    setIsAdmin(pathname.includes("/admin"));
+    const isAdminRoute = pathname.includes("/admin");
+    
+    if (isAdminRoute) {
+      // Check if user is authenticated
+      const authStatus = sessionStorage.getItem('adminAuthenticated') === 'true';
+      setIsAuthenticated(authStatus);
+      setIsAdmin(authStatus);
+    } else {
+      setIsAdmin(false);
+      setIsAuthenticated(false);
+    }
     
     // Load data from public folder file on mount
     loadStockFile();
+  }, [activeBranch]);
+
+  // Listen for pathname changes (browser navigation)
+  useEffect(() => {
+    const handleLocationChange = () => {
+      const pathname = window.location.pathname;
+      const isAdminRoute = pathname.includes("/admin");
+      
+      if (isAdminRoute) {
+        const authStatus = sessionStorage.getItem('adminAuthenticated') === 'true';
+        setIsAuthenticated(authStatus);
+        setIsAdmin(authStatus);
+      } else {
+        setIsAdmin(false);
+        setIsAuthenticated(false);
+      }
+    };
+
+    // Check on popstate (browser back/forward)
+    window.addEventListener('popstate', handleLocationChange);
+    
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+    };
   }, []);
 
   const loadStockFile = async () => {
     try {
       setIsLoading(true);
       
-      // Check if sample-stock.xlsx exists in public folder
-      const response = await fetch(STOCK_FILE_PATH);
+      const filePath = getStockFilePath(activeBranch);
+      const branchName = activeBranch === BRANCHES.HONG_KONG ? "Hong Kong" : "Dubai";
+      
+      // Check if branch stock file exists in public folder
+      const response = await fetch(filePath);
       if (response.ok) {
         // File exists, load data from it
         const arrayBuffer = await response.arrayBuffer();
@@ -69,37 +126,57 @@ export default function App() {
 
         if (normalized.length > 0) {
           setRows(normalized);
-          setStatus(`Loaded ${normalized.length} items from sample-stock.xlsx`);
+          setStatus(`Loaded ${normalized.length} items from ${branchName} branch`);
         } else {
           // If file is empty, show sample data
           setRows(SAMPLE_DATA);
-          setStatus("Showing sample data (sample-stock.xlsx is empty)");
+          setStatus(`Showing sample data (${branchName} stock file is empty)`);
         }
       } else {
         // File doesn't exist, show sample data
         setRows(SAMPLE_DATA);
-        setStatus("Showing sample data");
+        setStatus(`Showing sample data (${branchName} stock file not found)`);
       }
     } catch (err) {
       console.error("File load error:", err);
       // If file can't be loaded, show sample data
       setRows(SAMPLE_DATA);
-      setStatus("Showing sample data");
+      const branchName = activeBranch === BRANCHES.HONG_KONG ? "Hong Kong" : "Dubai";
+      setStatus(`Showing sample data (${branchName} branch)`);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleFile = async (file) => {
+  const handleFile = async (file, branch = null) => {
     try {
       setStatus("Uploading file…");
+      
+      // Use provided branch or fall back to active branch
+      const targetBranch = branch || activeBranch;
+      
+      // Ensure correct branch value for backend
+      const branchValue = targetBranch === BRANCHES.HONG_KONG ? 'hong-kong' : 'dubai';
+      
+      console.log('=== FRONTEND UPLOAD DEBUG ===');
+      console.log('targetBranch:', targetBranch);
+      console.log('BRANCHES.DUBAI:', BRANCHES.DUBAI);
+      console.log('BRANCHES.HONG_KONG:', BRANCHES.HONG_KONG);
+      console.log('branchValue:', branchValue);
+      console.log('Is Hong Kong?', targetBranch === BRANCHES.HONG_KONG);
       
       // Create FormData for file upload
       const formData = new FormData();
       formData.append('file', file);
+      formData.append('branch', branchValue);
 
       // Upload file to backend
-      const uploadResponse = await fetch(UPLOAD_API_URL, {
+      // Also add branch as query parameter as backup (URL encode it)
+      const encodedBranch = encodeURIComponent(branchValue);
+      const uploadUrl = `${UPLOAD_API_URL}?branch=${encodedBranch}`;
+      console.log('Upload URL:', uploadUrl);
+      
+      const uploadResponse = await fetch(uploadUrl, {
         method: 'POST',
         body: formData
       });
@@ -128,22 +205,58 @@ export default function App() {
         throw new Error("No data found in the first sheet");
       }
 
-      setRows(normalized);
-      setStatus(`Uploaded and loaded ${normalized.length} items from ${file.name}`);
+      const branchName = targetBranch === BRANCHES.HONG_KONG ? "Hong Kong" : "Dubai";
       
-      // Reload data from the file to ensure consistency
-      setTimeout(() => {
-        loadStockFile();
-      }, 500);
+      console.log(`File uploaded successfully. Branch: ${branchName}, File saved as: ${branchValue === 'hong-kong' ? 'hongkong.xlsx' : 'dubai.xlsx'}`);
+      
+      // Update rows immediately with uploaded data
+      setRows(normalized);
+      setStatus(`Uploaded and loaded ${normalized.length} items to ${branchName} branch from ${file.name}`);
+      
+      // Switch to the target branch if uploading to a different branch
+      // This will trigger useEffect which will reload the file
+      if (targetBranch !== activeBranch) {
+        setActiveBranch(targetBranch);
+      } else {
+        // If uploading to current branch, reload the file to ensure consistency
+        setTimeout(() => {
+          loadStockFile();
+        }, 500);
+      }
     } catch (err) {
       console.error(err);
       setStatus(err.message || "Unable to upload file");
     }
   };
 
-  const handleChange = (event) => {
+  const handleChange = (event, branch = null) => {
     const file = event.target.files?.[0];
-    if (file) handleFile(file);
+    if (file) handleFile(file, branch);
+  };
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    setLoginError('');
+    
+    if (loginForm.username === ADMIN_CREDENTIALS.username && 
+        loginForm.password === ADMIN_CREDENTIALS.password) {
+      setIsAuthenticated(true);
+      setIsAdmin(true);
+      sessionStorage.setItem('adminAuthenticated', 'true');
+      setLoginForm({ username: '', password: '' });
+    } else {
+      setLoginError('Invalid username or password');
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setIsAdmin(false);
+    sessionStorage.removeItem('adminAuthenticated');
+    // Redirect to home if on admin route
+    if (window.location.pathname.includes('/admin')) {
+      window.history.pushState({}, '', '/');
+    }
   };
 
   const handlePriceEnquiry = (make, model) => {
@@ -177,6 +290,58 @@ export default function App() {
     });
   }, [rows, searchQuery]);
 
+  // Show login form if on admin route but not authenticated
+  const pathname = window.location.pathname;
+  const isAdminRoute = pathname.includes("/admin");
+  
+  if (isAdminRoute && !isAuthenticated) {
+    return (
+      <div className="page">
+        <header className="header-gradient">
+          <div className="header-content">
+            <div className="header-title">
+              <div className="header-text">
+                <span className="inventory-label">INVENTORY</span>
+                <h1>Stock Viewer</h1>
+              </div>
+              <h1 className="header-company">NMP Mobiles</h1>
+            </div>
+          </div>
+        </header>
+        <div className="login-container">
+          <div className="login-box">
+            <h2>Admin Login</h2>
+            <form onSubmit={handleLogin}>
+              <div className="form-group">
+                <label htmlFor="username">Username</label>
+                <input
+                  type="text"
+                  id="username"
+                  value={loginForm.username}
+                  onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
+                  required
+                  autoFocus
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="password">Password</label>
+                <input
+                  type="password"
+                  id="password"
+                  value={loginForm.password}
+                  onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                  required
+                />
+              </div>
+              {loginError && <div className="login-error">{loginError}</div>}
+              <button type="submit" className="login-btn">Login</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="page">
       <header className="header-gradient">
@@ -188,16 +353,53 @@ export default function App() {
             </div>
             <h1 className="header-company">NMP Mobiles</h1>
           </div>
-          {isAdmin && (
-            <label className="upload">
-              <input type="file" accept=".xlsx,.xls" onChange={handleChange} />
-              <span>Upload XLSX</span>
-            </label>
+          {isAuthenticated && (
+            <button className="logout-btn" onClick={handleLogout}>
+              Logout
+            </button>
           )}
         </div>
       </header>
 
       <section className="table-wrap">
+        <div className="branch-tabs">
+          <div className="branch-tab-wrapper">
+            <button
+              className={`branch-tab ${activeBranch === BRANCHES.DUBAI ? 'active' : ''}`}
+              onClick={() => setActiveBranch(BRANCHES.DUBAI)}
+            >
+              Dubai
+            </button>
+            {isAdmin && activeBranch === BRANCHES.DUBAI && (
+              <label className="upload-tab">
+                <input 
+                  type="file" 
+                  accept=".xlsx,.xls" 
+                  onChange={(e) => handleChange(e, BRANCHES.DUBAI)}
+                />
+                <span>Upload</span>
+              </label>
+            )}
+          </div>
+          <div className="branch-tab-wrapper">
+            <button
+              className={`branch-tab ${activeBranch === BRANCHES.HONG_KONG ? 'active' : ''}`}
+              onClick={() => setActiveBranch(BRANCHES.HONG_KONG)}
+            >
+              Hong Kong
+            </button>
+            {isAdmin && activeBranch === BRANCHES.HONG_KONG && (
+              <label className="upload-tab">
+                <input 
+                  type="file" 
+                  accept=".xlsx,.xls" 
+                  onChange={(e) => handleChange(e, BRANCHES.HONG_KONG)}
+                />
+                <span>Upload</span>
+              </label>
+            )}
+          </div>
+        </div>
         {isLoading ? (
           <div className="loading">Loading...</div>
         ) : rows.length === 0 ? (
@@ -233,7 +435,6 @@ export default function App() {
                 <tr 
                   key={`${row.make}-${row.model}-${idx}`} 
                   className={idx % 2 === 0 ? "even-row" : "odd-row"}
-                  style={{ backgroundColor: "#f0fdf4" }}
                 >
                   {columns.map((col) => {
                     const value = row[col.key];
@@ -246,8 +447,9 @@ export default function App() {
                             className="price-enquiry-btn"
                             onClick={() => handlePriceEnquiry(row.make, row.model)}
                             aria-label={`Price enquiry for ${row.make} ${row.model}`}
+                            title="Price Enquiry"
                           >
-                            {value || "Yes"}
+                            <img src="/msg.png" alt="Message" className="price-enquiry-icon" />
                           </button>
                         ) : (
                           value
