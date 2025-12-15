@@ -57,3 +57,4 @@ echo "🔄 Restart: pm2 restart stock-viewer-backend"
 echo ""
 echo "🌐 Your backend should be running on port 4000"
 
+

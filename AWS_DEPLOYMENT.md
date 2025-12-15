@@ -294,3 +294,4 @@ const FRONTEND_URL = process.env.FRONTEND_URL || 'https://your-vercel-app.vercel
 3. Set up automated backups
 4. Monitor with PM2: `pm2 monit`
 
+

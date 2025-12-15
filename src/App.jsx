@@ -1,6 +1,14 @@
 import { useMemo, useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 
+// Color sequence for inventory items - 3 colors that repeat
+// Colors from colour.png: Green, Soft Green, Yellow
+const COLOR_SEQUENCE = [
+  '#C8E6C9', // Color 1 - Green
+  '#E8F5E9', // Color 2 - Soft Green (lighter green)
+  '#FFF9C4', // Color 3 - Yellow
+];
+
 const columns = [
   { key: "make", label: "MAKE" },
   { key: "model", label: "MODEL" },
@@ -24,7 +32,7 @@ const getStockFilePath = (branch) => {
 const UPLOAD_API_URL = import.meta.env.VITE_UPLOAD_API_URL || "http://localhost:4000/upload";
 
 // WhatsApp number - update this with your actual WhatsApp number
-const WHATSAPP_NUMBER = "971585678669"; // Replace with your WhatsApp number (country code + number, no + or spaces)
+const WHATSAPP_NUMBER = "380666732238"; // Replace with your WhatsApp number (country code + number, no + or spaces)
 
 // Sample data to display when no file is uploaded
 const SAMPLE_DATA = [
@@ -262,11 +270,21 @@ export default function App() {
   const handlePriceEnquiry = (make, model) => {
     // Create WhatsApp message with product details
     const message = encodeURIComponent(
-      `Hello! I'm interested in getting a price quote for:\n\nMake: ${make}\nModel: ${model}\n\nPlease provide me with the pricing information.`
+      `Hello! I'm interested in getting a price quote for:\n\nMake: ${make}\nModel: ${model}.`
     );
     // Open WhatsApp with pre-filled message
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
     window.open(whatsappUrl, "_blank");
+  };
+
+  // Helper function to adjust color brightness for borders
+  const adjustBrightness = (hex, percent) => {
+    const num = parseInt(hex.replace("#", ""), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = Math.min(255, Math.max(0, (num >> 16) + amt));
+    const G = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amt));
+    const B = Math.min(255, Math.max(0, (num & 0x0000FF) + amt));
+    return "#" + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
   };
 
   const totalUnits = useMemo(
@@ -431,34 +449,45 @@ export default function App() {
                     </td>
                   </tr>
                 ) : (
-                  filteredRows.map((row, idx) => (
-                <tr 
-                  key={`${row.make}-${row.model}-${idx}`} 
-                  className={idx % 2 === 0 ? "even-row" : "odd-row"}
-                >
-                  {columns.map((col) => {
-                    const value = row[col.key];
+                  filteredRows.map((row, idx) => {
+                    // Get color from sequence (cycles through colors)
+                    const colorIndex = idx % COLOR_SEQUENCE.length;
+                    const backgroundColor = COLOR_SEQUENCE[colorIndex];
+                    const borderColor = adjustBrightness(backgroundColor, -20);
+                    
                     return (
-                      <td key={col.key} data-label={col.label} className={col.key === "model" ? "model-cell" : ""}>
-                        {col.key === "grading" ? (
-                          <span className="grading-badge">{value || "-"}</span>
-                        ) : col.key === "priceEnquiry" ? (
-                          <button
-                            className="price-enquiry-btn"
-                            onClick={() => handlePriceEnquiry(row.make, row.model)}
-                            aria-label={`Price enquiry for ${row.make} ${row.model}`}
-                            title="Price Enquiry"
-                          >
-                            <img src="/msg.png" alt="Message" className="price-enquiry-icon" />
-                          </button>
-                        ) : (
-                          value
-                        )}
-                      </td>
+                      <tr 
+                        key={`${row.make}-${row.model}-${idx}`} 
+                        className={idx % 2 === 0 ? "even-row" : "odd-row"}
+                        style={{
+                          backgroundColor: backgroundColor,
+                          borderColor: borderColor
+                        }}
+                      >
+                        {columns.map((col) => {
+                          const value = row[col.key];
+                          return (
+                            <td key={col.key} data-label={col.label} className={col.key === "model" ? "model-cell" : ""}>
+                              {col.key === "grading" ? (
+                                <span className="grading-badge">{value || "-"}</span>
+                              ) : col.key === "priceEnquiry" ? (
+                                <button
+                                  className="price-enquiry-btn"
+                                  onClick={() => handlePriceEnquiry(row.make, row.model)}
+                                  aria-label={`Price enquiry for ${row.make} ${row.model}`}
+                                  title="Price Enquiry"
+                                >
+                                  <img src="/msg.png" alt="Message" className="price-enquiry-icon" />
+                                </button>
+                              ) : (
+                                value
+                              )}
+                            </td>
+                          );
+                        })}
+                      </tr>
                     );
-                  })}
-                  </tr>
-                  ))
+                  })
                 )}
               </tbody>
             </table>

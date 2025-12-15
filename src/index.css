@@ -341,7 +341,8 @@ body {
 
 table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0 12px;
   min-width: 600px;
 }
 
@@ -365,20 +366,35 @@ thead th {
 }
 
 tbody tr.even-row {
-  background: #f0fdf4;
+  border: 2px solid;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  /* Background color will be set inline from COLOR_SEQUENCE */
 }
 
 tbody tr.odd-row {
-  background: #f0fdf4;
+  border: 2px solid;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  /* Background color will be set inline from COLOR_SEQUENCE */
 }
 
 tbody tr {
-  border-bottom: 1px solid #e5e7eb;
-  transition: background 0.15s;
+  border-bottom: none;
+  transition: all 0.2s;
+  display: table-row;
+  margin-bottom: 8px;
+}
+
+tbody tr + tr {
+  margin-top: 8px;
 }
 
 tbody tr:hover {
-  background: #f3f4f6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 tbody tr:last-child {
@@ -389,10 +405,38 @@ td {
   padding: 1rem;
   color: #333;
   font-size: 0.95rem;
+  border: none;
 }
 
 td.model-cell {
-  font-weight: 500;
+  font-weight: 700;
+  color: #2e7d32;
+  font-size: 1rem;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  border-left: 4px solid #4caf50;
+  padding-left: 1.2rem;
+}
+
+.share-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #4caf50;
+  font-size: 1.2rem;
+}
+
+.share-btn:hover {
+  transform: scale(1.2);
+  color: #2e7d32;
+}
+
+.share-btn i {
+  font-size: 1.2rem;
 }
 
 .grading-badge {
@@ -531,13 +575,15 @@ td.model-cell {
   }
 
   tbody tr.even-row {
-    background: #f0fdf4;
     width: 100%;
+    border: 2px solid;
+    /* Background color will be set inline from COLOR_SEQUENCE */
   }
 
   tbody tr.odd-row {
-    background: #f0fdf4;
     width: 100%;
+    border: 2px solid;
+    /* Background color will be set inline from COLOR_SEQUENCE */
   }
 
   td {
@@ -552,7 +598,25 @@ td.model-cell {
   }
 
   td.model-cell {
-    font-weight: 500;
+    font-weight: 700;
+    color: #2e7d32;
+    font-size: 0.95rem;
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    border-left: 4px solid #4caf50;
+    padding-left: 1rem;
+  }
+
+  .share-btn {
+    font-size: 1rem;
+    color: #4caf50;
+    background: transparent;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+  }
+
+  .share-btn i {
+    font-size: 1rem;
   }
 
   td:last-child {
