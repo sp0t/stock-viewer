@@ -25,7 +25,6 @@ app.use((req, res, next) => {
   next();
 });
 app.use(express.static('public'));
-app.use(express.static('dist')); // For production build
 
 // Middleware to capture branch from query before multer processes
 const captureBranch = (req, res, next) => {
@@ -160,9 +159,9 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-// Serve React app for all other routes (for SPA routing)
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+// Simple root route (optional)
+app.get('/', (req, res) => {
+  res.json({ status: 'backend-ok' });
 });
 
 app.listen(PORT, () => {
