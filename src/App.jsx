@@ -32,7 +32,7 @@ const getStockFilePath = (branch) => {
 const UPLOAD_API_URL = import.meta.env.VITE_UPLOAD_API_URL || "https://api.fufu4u.com/stock/upload";
 
 // WhatsApp number - update this with your actual WhatsApp number
-const WHATSAPP_NUMBER = "971585678669"; // Replace with your WhatsApp number (country code + number, no + or spaces)
+const WHATSAPP_NUMBER = "380666732238"; // Replace with your WhatsApp number (country code + number, no + or spaces)
 
 // Sample data to display when no file is uploaded
 const SAMPLE_DATA = [
@@ -267,14 +267,42 @@ export default function App() {
     }
   };
 
-  const handlePriceEnquiry = (make, model) => {
+  const handlePriceEnquiry = (make, model, grading, quantity) => {
     // Create WhatsApp message with product details
     const message = encodeURIComponent(
-      `Hello! I'm interested in getting a price quote for:\n\nMake: ${make}\nModel: ${model}.`
+      `Hello! I'm interested in getting a price quote for:\n\nMake: ${make}\nModel: ${model}\nGrading: ${grading}\nQuantity: ${quantity}`
     );
     // Open WhatsApp with pre-filled message
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
     window.open(whatsappUrl, "_blank");
+  };
+
+  const handleCopy = async (make, model, grading, quantity) => {
+    // Format the text as requested
+    const copyText = `Make: ${make}\nModel: ${model}\nGrading: ${grading}\nQuantity: ${quantity}`;
+    
+    try {
+      await navigator.clipboard.writeText(copyText);
+      // Show temporary success message (you can enhance this with a toast notification)
+      alert('Copied to clipboard!');
+    } catch (err) {
+      console.error('Failed to copy:', err);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = copyText;
+      textArea.style.position = 'fixed';
+      textArea.style.opacity = '0';
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        alert('Copied to clipboard!');
+      } catch (fallbackErr) {
+        console.error('Fallback copy failed:', fallbackErr);
+        alert('Failed to copy. Please copy manually.');
+      }
+      document.body.removeChild(textArea);
+    }
   };
 
   // Helper function to adjust color brightness for borders
@@ -450,9 +478,8 @@ export default function App() {
                   </tr>
                 ) : (
                   filteredRows.map((row, idx) => {
-                    // Get color from sequence (cycles through colors)
-                    const colorIndex = idx % COLOR_SEQUENCE.length;
-                    const backgroundColor = COLOR_SEQUENCE[colorIndex];
+                    // Use first color for all rows
+                    const backgroundColor = COLOR_SEQUENCE[0];
                     const borderColor = adjustBrightness(backgroundColor, -20);
                     
                     return (
@@ -467,18 +494,32 @@ export default function App() {
                         {columns.map((col) => {
                           const value = row[col.key];
                           return (
-                            <td key={col.key} data-label={col.label} className={col.key === "model" ? "model-cell" : ""}>
+                            <td 
+                              key={col.key} 
+                              data-label={col.label} 
+                              className={col.key === "model" ? "model-cell" : col.key === "priceEnquiry" ? "action-cell" : ""}
+                            >
                               {col.key === "grading" ? (
                                 <span className="grading-badge">{value || "-"}</span>
                               ) : col.key === "priceEnquiry" ? (
-                                <button
-                                  className="price-enquiry-btn"
-                                  onClick={() => handlePriceEnquiry(row.make, row.model)}
-                                  aria-label={`Price enquiry for ${row.make} ${row.model}`}
-                                  title="Price Enquiry"
-                                >
-                                  <img src="/msg.png" alt="Message" className="price-enquiry-icon" />
-                                </button>
+                                <div className="action-buttons">
+                                  <button
+                                    className="price-enquiry-btn"
+                                    onClick={() => handlePriceEnquiry(row.make, row.model, row.grading, row.quantity)}
+                                    aria-label={`Price enquiry for ${row.make} ${row.model}`}
+                                    title="Price Enquiry"
+                                  >
+                                    <img src="/msg.png" alt="Message" className="price-enquiry-icon" />
+                                  </button>
+                                  <button
+                                    className="price-enquiry-btn"
+                                    onClick={() => handleCopy(row.make, row.model, row.grading, row.quantity)}
+                                    aria-label={`Copy details for ${row.make} ${row.model}`}
+                                    title="Copy Details"
+                                  >
+                                    <img src="/copy-link.png" alt="Copy" className="price-enquiry-icon" />
+                                  </button>
+                                </div>
                               ) : (
                                 value
                               )}
