@@ -29,10 +29,10 @@ const getStockFilePath = (branch) => {
   return "/dubai.xlsx";
 };
 
-const UPLOAD_API_URL = import.meta.env.VITE_UPLOAD_API_URL || "http://localhost:4000/upload";
+const UPLOAD_API_URL = import.meta.env.VITE_UPLOAD_API_URL || "https://api.fufu4u.com/stock/upload";
 
 // WhatsApp number - update this with your actual WhatsApp number
-const WHATSAPP_NUMBER = "380666732238"; // Replace with your WhatsApp number (country code + number, no + or spaces)
+const WHATSAPP_NUMBER = "971585678669"; // Replace with your WhatsApp number (country code + number, no + or spaces)
 
 // Sample data to display when no file is uploaded
 const SAMPLE_DATA = [
