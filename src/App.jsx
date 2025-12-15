@@ -22,17 +22,34 @@ const BRANCHES = {
   HONG_KONG: "hong-kong"
 };
 
-const getStockFilePath = (branch) => {
-  if (branch === BRANCHES.HONG_KONG) {
-    return "/hongkong.xlsx";
-  }
-  return "/dubai.xlsx";
-};
-
 const UPLOAD_API_URL = import.meta.env.VITE_UPLOAD_API_URL || "https://api.fufu4u.com/stock/upload";
 
+// Derive backend base URL (protocol + host) from the upload API URL
+// Example: https://api.fufu4u.com/stock/upload -> https://api.fufu4u.com
+const BACKEND_BASE_URL = (() => {
+  try {
+    const url = new URL(UPLOAD_API_URL);
+    return url.origin;
+  } catch {
+    return "";
+  }
+})();
+
+const getStockFilePath = (branch) => {
+  const fileName = branch === BRANCHES.HONG_KONG ? "hongkong.xlsx" : "dubai.xlsx";
+
+  // If we have a backend base URL (EC2), load from there.
+  // This ensures we read the file saved by the backend, not from the Vercel public folder.
+  if (BACKEND_BASE_URL) {
+    return `${BACKEND_BASE_URL}/${fileName}`;
+  }
+
+  // Fallback: relative path (local dev or same-origin hosting)
+  return `/${fileName}`;
+};
+
 // WhatsApp number - update this with your actual WhatsApp number
-const WHATSAPP_NUMBER = "380666732238"; // Replace with your WhatsApp number (country code + number, no + or spaces)
+const WHATSAPP_NUMBER = "971585678669"; // Replace with your WhatsApp number (country code + number, no + or spaces)
 
 // Sample data to display when no file is uploaded
 const SAMPLE_DATA = [
