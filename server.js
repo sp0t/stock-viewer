@@ -24,7 +24,11 @@ app.use((req, res, next) => {
   }
   next();
 });
-app.use(express.static('public'));
+
+// Serve static files (Excel) under /stock so they go through the same Nginx location
+// public/dubai.xlsx     -> http://localhost:4001/stock/dubai.xlsx
+// public/hongkong.xlsx  -> http://localhost:4001/stock/hongkong.xlsx
+app.use('/stock', express.static('public'));
 
 // Middleware to capture branch from query before multer processes
 const captureBranch = (req, res, next) => {

@@ -41,11 +41,13 @@ const getStockFilePath = (branch) => {
   // If we have a backend base URL (EC2), load from there.
   // This ensures we read the file saved by the backend, not from the Vercel public folder.
   if (BACKEND_BASE_URL) {
-    return `${BACKEND_BASE_URL}/${fileName}`;
+    // Files are served via Express under /stock so they go through Nginx location /stock/
+    // Example: https://api.fufu4u.com/stock/dubai.xlsx
+    return `${BACKEND_BASE_URL}/stock/${fileName}`;
   }
 
   // Fallback: relative path (local dev or same-origin hosting)
-  return `/${fileName}`;
+  return `/stock/${fileName}`;
 };
 
 // WhatsApp number - update this with your actual WhatsApp number
