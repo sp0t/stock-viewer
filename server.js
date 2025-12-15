@@ -115,7 +115,7 @@ const parseFormFields = (req, res, next) => {
 };
 
 // Upload endpoint
-app.post('/upload', captureBranch, parseFormFields, upload.single('file'), (req, res) => {
+app.post('/stock/upload', captureBranch, parseFormFields, upload.single('file'), (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
@@ -166,6 +166,6 @@ app.get('/', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
-  console.log(`Upload endpoint: http://localhost:${PORT}/upload`);
+  console.log(`Upload endpoint: http://localhost:${PORT}/stock/upload`);
 });
 
